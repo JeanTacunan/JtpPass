@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Registro de Pasajes V2 - Ing. Jean Pool Tacunan Palomino</title>
+  
+  <!-- PWA Metadata & iOS Support -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="logo.svg">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Chart.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Mocked Mobile App Container -->
+  <div class="app-container">
+    
+    <!-- Header Block -->
+    <header>
+      <div class="header-brand">
+        <img src="logo.svg" alt="Logo Pasajes V2">
+        <div class="brand-details">
+          <h1>Pasajes V2</h1>
+          <span>Ing. Jean Pool Tacunan Palomino</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Sound Effect Toggle Toggle -->
+        <button id="soundToggle" class="theme-toggle-btn" title="Activar/Desactivar Sonidos">
+          <!-- Audio speaker icon -->
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+        <!-- Dark/Light Theme Button -->
+        <button id="themeToggle" class="theme-toggle-btn" title="Cambiar Tema">
+          <!-- Moon icon (Default) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="moon-icon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Contents Scrollable Area -->
+    <main>
+      
+      <!-- 1. REGISTRO PANEL -->
+      <section id="registro" class="panel active">
+        <div class="amount-display">
+          <p class="amount-label">Monto Seleccionado</p>
+          <div class="amount-value">
+            <span class="currency">S/</span>
+            <span id="selectedAmount">1.50</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Pasajes Rápidos</div>
+          <div class="quick-amounts-grid">
+            <button class="btn-quick" data-amount="1.00">S/1.0</button>
+            <button class="btn-quick active" data-amount="1.50">S/1.5</button>
+            <button class="btn-quick" data-amount="2.00">S/2.0</button>
+            <button class="btn-quick" data-amount="2.50">S/2.5</button>
+          </div>
+
+          <div class="input-custom-container">
+            <span>S/</span>
+            <input type="number" id="customAmount" placeholder="Otro monto personalizado..." step="0.10" min="0">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Método de Pago</div>
+          <div class="payment-grid">
+            <button class="btn-payment active" data-method="efectivo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                <circle cx="12" cy="12" r="2"></circle>
+                <path d="M6 12h.01M18 12h.01"></path>
+              </svg>
+              Efectivo
+            </button>
+            <button class="btn-payment" data-method="yape">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+              </svg>
+              Yape
+            </button>
+            <button class="btn-payment" data-method="plin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 12h8M12 8v8"></path>
+              </svg>
+              Plin
+            </button>
+            <button class="btn-payment" data-method="transferencia">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 12H9v-2h6v2zm4-5H5V8h14v3z"></path>
+              </svg>
+              Transf.
+            </button>
+          </div>
+        </div>
+
+        <div class="observation-container">
+          <input type="text" id="recordObservation" placeholder="Observaciones opcionales (ej. Ruta A, Escolar)..." maxlength="50">
+        </div>
+
+        <button id="btnRegistrar" class="btn-submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Registrar Pasaje
+        </button>
+      </section>
+
+      <!-- 2. DASHBOARD PANEL -->
+      <section id="dashboard" class="panel">
+        <!-- Key indicators grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Hoy</span>
+            <span id="kpiHoy" class="stat-value highlight">S/0.00</span>
+            <div id="trendHoy" class="stat-footer">
+              <!-- Dynamically populated trend -->
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Esta Semana</span>
+            <span id="kpiSemana" class="stat-value">S/0.00</span>
+            <span class="stat-footer">Últimos 7 días</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Este Mes</span>
+            <span id="kpiMes" class="stat-value">S/0.00</span>
+            <span class="stat-footer">Mes actual</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Pasajeros</span>
+            <span id="kpiPasajeros" class="stat-value">0</span>
+            <span class="stat-footer">Total de viajes</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Promedio / Viaje</span>
+            <span id="kpiPromedio" class="stat-value">S/0.00</span>
+            <span class="stat-footer">Monto promedio</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Método Popular</span>
+            <span id="kpiMetodo" class="stat-value">-</span>
+            <span class="stat-footer">Más utilizado</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Tendencia Diaria (Ingresos)</div>
+          <div class="chart-container">
+            <canvas id="chartTrend"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Métodos de Pago</div>
+          <div class="chart-container">
+            <canvas id="chartMethods"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Tráfico por Hora del Día</div>
+          <div class="chart-container">
+            <canvas id="chartHours"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. HISTORIAL PANEL -->
+      <section id="historial" class="panel">
+        <div class="filter-bar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchHistory" placeholder="Buscar por observación o monto...">
+          </div>
+          
+          <div class="filter-row">
+            <select id="filterDate" class="select-filter">
+              <option value="todos">Cualquier fecha</option>
+              <option value="hoy">Hoy</option>
+              <option value="ayer">Ayer</option>
+              <option value="semana">Últimos 7 días</option>
+              <option value="mes">Mes actual</option>
+            </select>
+
+            <select id="sortOrder" class="select-filter">
+              <option value="recientes">Más recientes primero</option>
+              <option value="antiguos">Más antiguos primero</option>
+              <option value="monto-mayor">Monto: Mayor primero</option>
+              <option value="monto-menor">Monto: Menor primero</option>
+            </select>
+          </div>
+
+          <div class="filter-pills">
+            <span class="pill active" data-filter-method="todos">Todos</span>
+            <span class="pill" data-filter-method="efectivo">Efectivo</span>
+            <span class="pill" data-filter-method="yape">Yape</span>
+            <span class="pill" data-filter-method="plin">Plin</span>
+            <span class="pill" data-filter-method="transferencia">Transf.</span>
+          </div>
+        </div>
+
+        <!-- History Records Container -->
+        <div id="historyListContainer" class="history-list">
+          <!-- Injected dynamically via JS -->
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-title">Exportar Reportes</div>
+          <div style="display: flex; gap: 10px;">
+            <button id="btnExportExcel" class="btn-secondary" style="flex: 1;">
+              <!-- Excel Grid Icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <line x1="15" y1="3" x2="15" y2="21"></line>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="3" y1="15" x2="21" y2="15"></line>
+              </svg>
+              Exportar Excel
+            </button>
+            <button id="btnExportPDF" class="btn-secondary" style="flex: 1;">
+              <!-- Document icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Imprimir PDF
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. AJUSTES PANEL -->
+      <section id="ajustes" class="panel">
+        
+        <div class="settings-section-title">Preferencias de Tarifas</div>
+        <div class="card">
+          <div class="setting-info">
+            <span class="setting-label">Botones Rápidos de Pasaje</span>
+            <span class="setting-description">Define los montos que aparecerán en la pantalla principal.</span>
+          </div>
+          <div class="tariff-inputs">
+            <div class="tariff-input-box">
+              <span>S/</span>
+              <input type="number" id="quickTariff0" step="0.10" value="1.00">
+            </div>
+            <div class="tariff-input-box">
+              <span>S/</span>
+              <input type="number" id="quickTariff1" step="0.10" value="1.50">
+            </div>
+            <div class="tariff-input-box">
+              <span>S/</span>
+              <input type="number" id="quickTariff2" step="0.10" value="2.00">
+            </div>
+            <div class="tariff-input-box">
+              <span>S/</span>
+              <input type="number" id="quickTariff3" step="0.10" value="2.50">
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section-title">Respaldo de Datos</div>
+        <div class="card">
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Exportar Backup</span>
+              <span class="setting-description">Descarga tu historial completo en un archivo JSON local.</span>
+            </div>
+            <button id="btnBackupExport" class="btn-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+              </svg>
+              Descargar
+            </button>
+          </div>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Importar Backup</span>
+              <span class="setting-description">Carga un historial de pasajes desde un archivo JSON.</span>
+            </div>
+            <label for="backupFileImport" class="btn-secondary" style="cursor: pointer;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
+              </svg>
+              Cargar Archivo
+              <input type="file" id="backupFileImport" accept=".json" style="display: none;">
+            </label>
+          </div>
+
+          <div class="setting-row" style="border-bottom: none;">
+            <div class="setting-info">
+              <span class="setting-label">Limpiar Base de Datos</span>
+              <span class="setting-description" style="color: var(--danger);">Eliminar permanentemente todos los pasajes registrados.</span>
+            </div>
+            <button id="btnDatabasePurge" class="btn-danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Vaciar
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section-title">Firebase Cloud Sync (Opcional)</div>
+        <div class="card">
+          <div class="setting-info" style="margin-bottom: 12px;">
+            <span class="setting-label">Sincronización en la Nube</span>
+            <span class="setting-description">Conecta la aplicación a tu propia base de datos Firebase para sincronización multiusuario y protección de datos.</span>
+          </div>
+          <div class="observation-container" style="margin-bottom: 10px;">
+            <input type="text" id="firebaseApiKey" placeholder="API Key de Firebase" style="font-size: 0.8rem;">
+          </div>
+          <div class="observation-container" style="margin-bottom: 10px;">
+            <input type="text" id="firebaseDbUrl" placeholder="Database URL (Realtime DB)" style="font-size: 0.8rem;">
+          </div>
+          <button id="btnSaveFirebase" class="btn-secondary" style="width: 100%; justify-content: center;">Guardar Configuración</button>
+        </div>
+
+        <!-- Credits Profile Card -->
+        <div class="credits-card">
+          <div class="credits-title">Información del Autor</div>
+          <h2 class="credits-author">Ing. Jean Pool Tacunan Palomino</h2>
+          <div class="credits-subtitle">Ingeniería de Sistemas e Informática</div>
+          <div class="credits-badge-container">
+            <span class="credits-badge">Sistemas</span>
+            <span class="credits-badge">UX/UI Fintech</span>
+            <span class="credits-badge">PWA V2</span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="registro">
+        <!-- Ticket Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+          <line x1="16" y1="4" x2="16" y2="20"></line>
+          <line x1="8" y1="4" x2="8" y2="20"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+        </svg>
+        <span>Registro</span>
+      </button>
+
+      <button class="nav-item" data-target="dashboard">
+        <!-- Analytics Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Dashboard</span>
+      </button>
+
+      <button class="nav-item" data-target="historial">
+        <!-- History List Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        <span>Historial</span>
+      </button>
+
+      <button class="nav-item" data-target="ajustes">
+        <!-- Settings Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Ajustes</span>
+      </button>
+    </nav>
+    
+  </div>
+
+  <!-- --- MODAL EDITAR REGISTRO --- -->
+  <div id="modalEditar" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Pasaje</h3>
+        <button id="btnCloseEditModal" class="btn-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editRecordId">
+        
+        <div style="margin-bottom: 14px;">
+          <label class="amount-label" style="display: block; margin-bottom: 6px;">Monto (S/)</label>
+          <div class="input-custom-container" style="margin-bottom: 0;">
+            <span>S/</span>
+            <input type="number" id="editRecordAmount" step="0.10" min="0">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="amount-label" style="display: block; margin-bottom: 6px;">Método de Pago</label>
+          <select id="editRecordMethod" class="select-filter" style="width: 100%; border-radius: 12px; height: 44px;">
+            <option value="efectivo">Efectivo</option>
+            <option value="yape">Yape</option>
+            <option value="plin">Plin</option>
+            <option value="transferencia">Transferencia</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 14px; display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label class="amount-label" style="display: block; margin-bottom: 6px;">Fecha</label>
+            <input type="date" id="editRecordDate" class="select-filter" style="width: 100%; border-radius: 12px; height: 44px; background-position: right 6px center;">
+          </div>
+          <div style="flex: 1;">
+            <label class="amount-label" style="display: block; margin-bottom: 6px;">Hora</label>
+            <input type="time" id="editRecordTime" class="select-filter" style="width: 100%; border-radius: 12px; height: 44px; background-position: right 6px center;">
+          </div>
+        </div>
+
+        <div>
+          <label class="amount-label" style="display: block; margin-bottom: 6px;">Observación</label>
+          <div class="observation-container" style="margin-bottom: 0;">
+            <input type="text" id="editRecordObservation" placeholder="Observación adicional..." maxlength="50">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelEdit" class="btn-secondary">Cancelar</button>
+        <button id="btnSaveEdit" class="btn-submit" style="width: auto; padding: 0 24px; height: 40px; font-size: 0.9rem;">
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- --- MODAL CONFIRMACION DE ELIMINACION --- -->
+  <div id="modalConfirmarEliminar" class="modal-overlay">
+    <div class="modal-content" style="max-height: 40vh;">
+      <div class="modal-header">
+        <h3>Confirmar Eliminación</h3>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+          ¿Estás seguro de que deseas eliminar este pasaje de tu historial? Esta acción no se puede deshacer.
+        </p>
+        <input type="hidden" id="deleteRecordId">
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelDelete" class="btn-secondary">Cancelar</button>
+        <button id="btnConfirmDelete" class="btn-danger" style="padding: 10px 20px;">
+          Eliminar Registro
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- --- MODAL CONFIRMACION DE VACIADO BD --- -->
+  <div id="modalConfirmarVaciado" class="modal-overlay">
+    <div class="modal-content" style="max-height: 40vh;">
+      <div class="modal-header">
+        <h3 style="color: var(--danger);">¡Advertencia Crítica!</h3>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+          ¿Estás seguro de que deseas <strong>vaciar completamente la base de datos</strong>? Se perderán todos los registros de pasajes de manera irreversible.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelPurge" class="btn-secondary">Cancelar</button>
+        <button id="btnConfirmPurge" class="btn-danger" style="padding: 10px 20px;">
+          Sí, Borrar Todo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load JavaScript Code -->
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  
+  <script>
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => console.log('Service Worker registrado con éxito', reg.scope))
+          .catch((err) => console.warn('Error al registrar Service Worker', err));
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329" />
+      <stop offset="100%" stop-color="#050814" />
+    </linearGradient>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Background Shield/Card -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <rect width="496" height="496" x="8" y="8" rx="120" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="4" />
+  
+  <!-- Stylized Geometric Bus Ticket/Fast forward symbol -->
+  <g transform="translate(106, 106)" filter="url(#glow)">
+    <!-- Main Chevron representing speed/trips -->
+    <path d="M60 40 L180 150 L60 260 L120 260 L240 150 L120 40 Z" fill="url(#logoGrad)" />
+    <!-- Secondary Chevron -->
+    <path d="M140 40 L260 150 L140 260 L200 260 L320 150 L200 40 Z" fill="url(#logoGrad)" opacity="0.6" />
+    <!-- Horizontal lines symbolizing speed/tracks -->
+    <rect x="40" y="140" width="80" height="20" rx="10" fill="url(#logoGrad)" />
+    <rect x="10" y="180" width="70" height="15" rx="7.5" fill="url(#logoGrad)" opacity="0.4" />
+  </g>
+</svg>
