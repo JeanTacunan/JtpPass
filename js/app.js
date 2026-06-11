@@ -6,6 +6,8 @@
 
 // --- GLOBAL STATE ---
 const state = {
+  activeVuelta: 1, // current active vuelta number
+  closedVueltas: [], // array of closed vuelta numbers
   records: [],
   tariffs: [1.00, 1.50, 2.00, 2.50],
   activeTab: 'registro',
@@ -88,16 +90,15 @@ const DOM = {
   quickTariffBtns: document.querySelectorAll('.btn-quick'),
   customAmount: document.getElementById('customAmount'),
   paymentBtns: document.querySelectorAll('.btn-payment'),
-  recordObservation: document.getElementById('recordObservation'),
   btnRegistrar: document.getElementById('btnRegistrar'),
-  
+
   // Historial Elements
   historyListContainer: document.getElementById('historyListContainer'),
   searchHistory: document.getElementById('searchHistory'),
   filterDate: document.getElementById('filterDate'),
   sortOrder: document.getElementById('sortOrder'),
   filterPills: document.querySelectorAll('.pill'),
-  
+
   // Modals
   modalEditar: document.getElementById('modalEditar'),
   editRecordId: document.getElementById('editRecordId'),
@@ -105,11 +106,10 @@ const DOM = {
   editRecordMethod: document.getElementById('editRecordMethod'),
   editRecordDate: document.getElementById('editRecordDate'),
   editRecordTime: document.getElementById('editRecordTime'),
-  editRecordObservation: document.getElementById('editRecordObservation'),
   btnCloseEditModal: document.getElementById('btnCloseEditModal'),
   btnCancelEdit: document.getElementById('btnCancelEdit'),
   btnSaveEdit: document.getElementById('btnSaveEdit'),
-  
+
   modalConfirmarEliminar: document.getElementById('modalConfirmarEliminar'),
   deleteRecordId: document.getElementById('deleteRecordId'),
   btnCancelDelete: document.getElementById('btnCancelDelete'),
@@ -118,7 +118,7 @@ const DOM = {
   modalConfirmarVaciado: document.getElementById('modalConfirmarVaciado'),
   btnCancelPurge: document.getElementById('btnCancelPurge'),
   btnConfirmPurge: document.getElementById('btnConfirmPurge'),
-  
+
   // Settings Inputs
   quickTariffs: [
     document.getElementById('quickTariff0'),
@@ -128,15 +128,56 @@ const DOM = {
   ],
   btnBackupExport: document.getElementById('btnBackupExport'),
   backupFileImport: document.getElementById('backupFileImport'),
-  btnDatabasePurge: document.getElementById('btnDatabasePurge'),
-  firebaseApiKey: document.getElementById('firebaseApiKey'),
+  // Added Vuelta control elements
+  btnFinalizarVuelta: document.getElementById('btnFinalizarVuelta'),
+  activeVueltaLabel: document.getElementById('activeVueltaLabel'),
+
+
+}
+
+// Function to update the Vuelta text label in the DOM
+function updateVueltaLabel() {
+  if (DOM.activeVueltaLabel) {
+    DOM.activeVueltaLabel.textContent = `Vuelta ${state.activeVuelta}`;
+  }
+}
+
+// Function to finalize current Vuelta
+function finalizarVuelta() {
+  // Add current vuelta to closed list
+  if (!state.closedVueltas.includes(state.activeVuelta)) {
+    state.closedVueltas.push(state.activeVuelta);
+  }
+  // Increment active vuelta
+  state.activeVuelta += 1;
+  // Update UI
+  updateVueltaLabel();
+  // Save and refresh
+  saveData();
+  renderHistory();
+  if (window.updateDashboard) {
+    window.updateDashboard();
+  }
+  SoundEffects.play('success');
+  showQuickBanner('Vuelta finalizada');
+}
+
+// Attach event listener
+if (DOM.btnFinalizarVuelta) {
+  DOM.btnFinalizarVuelta.addEventListener('click', () => {
+    SoundEffects.play('click');
+    finalizarVuelta();
+  });
+}
+/*
+firebaseApiKey: document.getElementById('firebaseApiKey'),
   firebaseDbUrl: document.getElementById('firebaseDbUrl'),
-  btnSaveFirebase: document.getElementById('btnSaveFirebase'),
-  
-  // Exports
-  btnExportExcel: document.getElementById('btnExportExcel'),
-  btnExportPDF: document.getElementById('btnExportPDF')
-};
+    btnSaveFirebase: document.getElementById('btnSaveFirebase'),
+
+      // Exports
+      btnExportExcel: document.getElementById('btnExportExcel'),
+        btnExportPDF: document.getElementById('btnExportPDF')
+}; */
 
 // --- INITIALIZE APPLICATION ---
 function initApp() {
@@ -146,6 +187,7 @@ function initApp() {
   applySoundsIndicator();
   updateTariffUI();
   renderHistory();
+  updateVueltaLabel();
   if (window.updateDashboard) {
     window.updateDashboard();
   }
@@ -155,17 +197,17 @@ function initApp() {
 function loadData() {
   // Load Theme
   state.theme = localStorage.getItem('pasajes_v2_theme') || 'dark';
-  
+
   // Load Sounds Switch
   const savedSounds = localStorage.getItem('pasajes_v2_sounds');
   state.soundsEnabled = savedSounds !== null ? JSON.parse(savedSounds) : true;
-  
+
   // Load Tariffs
   const savedTariffs = localStorage.getItem('pasajes_v2_tariffs');
   if (savedTariffs) {
     state.tariffs = JSON.parse(savedTariffs);
   }
-  
+
   // Load Records
   const savedRecords = localStorage.getItem('pasajes_v2_records');
   if (savedRecords) {
@@ -177,6 +219,35 @@ function loadData() {
   if (savedFirebase) {
     state.firebaseConfig = JSON.parse(savedFirebase);
   }
+
+  // Load Active Vuelta and Closed Vueltas
+  const savedActiveVuelta = localStorage.getItem('pasajes_v2_active_vuelta');
+  if (savedActiveVuelta !== null) {
+    state.activeVuelta = parseInt(savedActiveVuelta, 10);
+  } else {
+    state.activeVuelta = 1;
+  }
+  const savedClosedVueltas = localStorage.getItem('pasajes_v2_closed_vueltas');
+  if (savedClosedVueltas !== null) {
+    state.closedVueltas = JSON.parse(savedClosedVueltas);
+  } else {
+    state.closedVueltas = [];
+  }
+
+  // Auto-reset on new day (Local timezone)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  const lastActiveDate = localStorage.getItem('pasajes_v2_last_active_date');
+  if (lastActiveDate !== todayStr) {
+    state.activeVuelta = 1;
+    state.closedVueltas = [];
+    localStorage.setItem('pasajes_v2_last_active_date', todayStr);
+    localStorage.setItem('pasajes_v2_active_vuelta', 1);
+    localStorage.setItem('pasajes_v2_closed_vueltas', JSON.stringify([]));
+  }
 }
 
 function saveData() {
@@ -185,7 +256,9 @@ function saveData() {
   localStorage.setItem('pasajes_v2_theme', state.theme);
   localStorage.setItem('pasajes_v2_sounds', JSON.stringify(state.soundsEnabled));
   localStorage.setItem('pasajes_v2_firebase', JSON.stringify(state.firebaseConfig));
-  
+  localStorage.setItem('pasajes_v2_active_vuelta', state.activeVuelta);
+  localStorage.setItem('pasajes_v2_closed_vueltas', JSON.stringify(state.closedVueltas));
+
   // Update external Sync if Firebase is configured
   syncToFirebase();
 }
@@ -199,7 +272,7 @@ function addRecord() {
     alert('Por favor seleccione o ingrese un monto válido.');
     return;
   }
-  
+
   // Find active payment method
   let paymentMethod = 'efectivo';
   DOM.paymentBtns.forEach(btn => {
@@ -207,34 +280,33 @@ function addRecord() {
       paymentMethod = btn.dataset.method;
     }
   });
-  
+
   const now = new Date();
-  
+
   // Adjust to local timezone date string
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   const localDate = `${year}-${month}-${day}`;
-  
+
   const localTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  
+
   const record = {
+    vuelta: state.activeVuelta, // associate with current vuelta
     id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     amount: amount,
     method: paymentMethod,
     date: localDate,
-    time: localTime,
-    observation: DOM.recordObservation.value.trim()
+    time: localTime
   };
-  
+
   state.records.unshift(record); // Prepend to history
   saveData();
-  
+
   // Play Success Sound
   SoundEffects.play('success');
-  
+
   // Reset input fields
-  DOM.recordObservation.value = '';
   DOM.customAmount.value = '';
   // Set back to default active quick amount
   DOM.quickTariffBtns.forEach(btn => {
@@ -242,13 +314,13 @@ function addRecord() {
       btn.click();
     }
   });
-  
+
   // Update views
   renderHistory();
   if (window.updateDashboard) {
     window.updateDashboard();
   }
-  
+
   // Trigger quick success flash alert in document
   showQuickBanner('Pasaje registrado con éxito');
 }
@@ -280,30 +352,30 @@ function updateRecord(id, updatedFields) {
 
 // --- EVENT LISTENERS ---
 function setupEventListeners() {
-  
+
   // Tab Navigation switching
   DOM.navItems.forEach(item => {
     item.addEventListener('click', () => {
       SoundEffects.play('click');
       const target = item.dataset.target;
-      
+
       // Update active nav button
       DOM.navItems.forEach(i => i.classList.remove('active'));
       item.classList.add('active');
-      
+
       // Update active panel content
       DOM.panels.forEach(p => p.classList.remove('active'));
       document.getElementById(target).classList.add('active');
-      
+
       state.activeTab = target;
-      
+
       // Special: Refresh charts when entering dashboard
       if (target === 'dashboard' && window.updateDashboard) {
         window.updateDashboard();
       }
     });
   });
-  
+
   // Theme Toggle click
   DOM.themeToggle.addEventListener('click', () => {
     state.theme = state.theme === 'dark' ? 'light' : 'dark';
@@ -324,7 +396,7 @@ function setupEventListeners() {
       SoundEffects.play('click');
     }
   });
-  
+
   // Quick Tariff Amount Buttons
   DOM.quickTariffBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -335,7 +407,7 @@ function setupEventListeners() {
       DOM.customAmount.value = ''; // clear custom
     });
   });
-  
+
   // Custom Amount Input Change
   DOM.customAmount.addEventListener('input', () => {
     const val = parseFloat(DOM.customAmount.value);
@@ -352,7 +424,7 @@ function setupEventListeners() {
       }
     }
   });
-  
+
   // Payment Method buttons grid selection
   DOM.paymentBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -361,17 +433,17 @@ function setupEventListeners() {
       btn.classList.add('active');
     });
   });
-  
+
   // Submit record pasaje
   DOM.btnRegistrar.addEventListener('click', () => {
     addRecord();
   });
-  
+
   // --- HISTORY FILTERS EVENTS ---
   DOM.searchHistory.addEventListener('input', renderHistory);
   DOM.filterDate.addEventListener('change', renderHistory);
   DOM.sortOrder.addEventListener('change', renderHistory);
-  
+
   DOM.filterPills.forEach(pill => {
     pill.addEventListener('click', () => {
       SoundEffects.play('click');
@@ -380,9 +452,9 @@ function setupEventListeners() {
       renderHistory();
     });
   });
-  
+
   // --- SETTINGS PREFERENCES EVENTS ---
-  
+
   // Custom tariff buttons updater
   DOM.quickTariffs.forEach((input, index) => {
     input.addEventListener('change', () => {
@@ -395,12 +467,13 @@ function setupEventListeners() {
       }
     });
   });
-  
+
   // JSON Database Purge (Double validation popup)
   DOM.btnDatabasePurge.addEventListener('click', () => {
     SoundEffects.play('warning');
     DOM.modalConfirmarVaciado.classList.add('active');
   });
+
   DOM.btnCancelPurge.addEventListener('click', () => {
     SoundEffects.play('click');
     DOM.modalConfirmarVaciado.classList.remove('active');
@@ -416,26 +489,31 @@ function setupEventListeners() {
     }
     showQuickBanner('Base de datos vaciada');
   });
-  
+
   // Export Data JSON Backup
   DOM.btnBackupExport.addEventListener('click', () => {
     SoundEffects.play('click');
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `pasajes_v2_backup_${new Date().toISOString().split('T')[0]}.json`);
+    const bNow = new Date();
+    const bYear = bNow.getFullYear();
+    const bMonth = String(bNow.getMonth() + 1).padStart(2, '0');
+    const bDay = String(bNow.getDate()).padStart(2, '0');
+    const bDateStr = `${bYear}-${bMonth}-${bDay}`;
+    downloadAnchor.setAttribute("download", `pasajes_v2_backup_${bDateStr}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   });
-  
+
   // Import Data JSON Backup
   DOM.backupFileImport.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
-    reader.onload = function(evt) {
+    reader.onload = function (evt) {
       try {
         const imported = JSON.parse(evt.target.result);
         if (imported.records && Array.isArray(imported.records)) {
@@ -456,7 +534,7 @@ function setupEventListeners() {
     };
     reader.readAsText(file);
   });
-  
+
   // Firebase configuration save
   DOM.btnSaveFirebase.addEventListener('click', () => {
     SoundEffects.play('click');
@@ -465,12 +543,12 @@ function setupEventListeners() {
     saveData();
     showQuickBanner('Configuración Firebase Guardada');
   });
-  
+
   // --- EDIT MODAL INTERACTION ---
   DOM.btnCloseEditModal.addEventListener('click', closeEditModal);
   DOM.btnCancelEdit.addEventListener('click', closeEditModal);
   DOM.btnSaveEdit.addEventListener('click', saveEditChanges);
-  
+
   // --- CONFIRM DELETE MODAL ---
   DOM.btnCancelDelete.addEventListener('click', () => {
     SoundEffects.play('click');
@@ -481,7 +559,7 @@ function setupEventListeners() {
     deleteRecord(id);
     DOM.modalConfirmarEliminar.classList.remove('active');
   });
-  
+
   // --- REPORT EXPORTS EVENTS ---
   DOM.btnExportExcel.addEventListener('click', exportToCSV);
   DOM.btnExportPDF.addEventListener('click', triggerPDFPrint);
@@ -536,7 +614,7 @@ function updateTariffUI() {
     btn.dataset.amount = state.tariffs[idx].toFixed(2);
     btn.textContent = `S/${state.tariffs[idx].toFixed(1)}`;
   });
-  
+
   // Set selected amount based on active button
   const activeBtn = document.querySelector('.btn-quick.active');
   if (activeBtn) {
@@ -574,16 +652,16 @@ function showQuickBanner(message) {
   banner.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
   banner.style.zIndex = '9999';
   banner.textContent = message;
-  
+
   const container = document.querySelector('.app-container');
   container.appendChild(banner);
-  
+
   // Animation Entry
   setTimeout(() => {
     banner.style.opacity = '1';
     banner.style.transform = 'translateX(-50%) translateY(0)';
   }, 50);
-  
+
   // Animation Leave
   setTimeout(() => {
     banner.style.opacity = '0';
@@ -597,7 +675,7 @@ function renderHistory() {
   const searchTerm = DOM.searchHistory.value.toLowerCase().trim();
   const dateFilter = DOM.filterDate.value;
   const sort = DOM.sortOrder.value;
-  
+
   // Find active payment filter pill
   let paymentFilter = 'todos';
   DOM.filterPills.forEach(p => {
@@ -605,31 +683,30 @@ function renderHistory() {
       paymentFilter = p.dataset.filterMethod;
     }
   });
-  
+
   // Filter Records
   let filtered = [...state.records];
-  
+
   // Search query filter
   if (searchTerm !== '') {
-    filtered = filtered.filter(rec => 
-      rec.amount.toFixed(2).includes(searchTerm) || 
-      (rec.observation && rec.observation.toLowerCase().includes(searchTerm))
+    filtered = filtered.filter(rec =>
+      rec.amount.toFixed(2).includes(searchTerm)
     );
   }
-  
+
   // Payment Method Pill Filter
   if (paymentFilter !== 'todos') {
     filtered = filtered.filter(rec => rec.method === paymentFilter);
   }
-  
+
   // Date range filter
   if (dateFilter !== 'todos') {
     const today = new Date();
-    today.setHours(0,0,0,0);
-    
+    today.setHours(0, 0, 0, 0);
+
     filtered = filtered.filter(rec => {
       const recDate = new Date(rec.date + 'T00:00:00');
-      
+
       if (dateFilter === 'hoy') {
         return recDate.getTime() === today.getTime();
       } else if (dateFilter === 'ayer') {
@@ -646,7 +723,7 @@ function renderHistory() {
       return true;
     });
   }
-  
+
   // Sort Records
   filtered.sort((a, b) => {
     if (sort === 'recientes') {
@@ -660,10 +737,10 @@ function renderHistory() {
     }
     return 0;
   });
-  
+
   // Render
   DOM.historyListContainer.innerHTML = '';
-  
+
   if (filtered.length === 0) {
     DOM.historyListContainer.innerHTML = `
       <div class="empty-state">
@@ -676,30 +753,35 @@ function renderHistory() {
     `;
     return;
   }
-  
+
   filtered.forEach(rec => {
     const item = document.createElement('div');
     item.className = 'history-item';
     item.dataset.id = rec.id;
-    
+
+    // Check if vuelta is closed to block edits
+    const isClosed = state.closedVueltas.includes(rec.vuelta);
+
     // Nice badge display letter
     const initial = rec.method.charAt(0).toUpperCase();
-    
+
     item.innerHTML = `
       <div class="item-left">
         <div class="item-badge" data-method="${rec.method}">${initial}</div>
         <div class="item-info">
           <span class="item-payment-method">${rec.method === 'transferencia' ? 'Transf.' : rec.method}</span>
           <div class="item-meta">
+            <span>Vuelta ${rec.vuelta}</span>
+            <span>•</span>
             <span>${formatDateString(rec.date)}</span>
             <span>•</span>
             <span>${rec.time}</span>
           </div>
-          ${rec.observation ? `<span class="item-obs">${rec.observation}</span>` : ''}
         </div>
       </div>
       <div class="item-right">
         <span class="item-amount">S/${rec.amount.toFixed(2)}</span>
+        ${!isClosed ? `
         <div class="item-actions">
           <button class="btn-icon edit-btn" onclick="openEditModal('${rec.id}')" title="Editar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -715,10 +797,10 @@ function renderHistory() {
               <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
           </button>
-        </div>
+        </div>` : ''}
       </div>
     `;
-    
+
     DOM.historyListContainer.appendChild(item);
   });
 }
@@ -736,25 +818,24 @@ function formatDateString(str) {
 // --- MODALS ACTIONS AND WRAPPERS ---
 
 // Delete warning prompt trigger
-window.triggerDeleteConfirm = function(id) {
+window.triggerDeleteConfirm = function (id) {
   SoundEffects.play('warning');
   DOM.deleteRecordId.value = id;
   DOM.modalConfirmarEliminar.classList.add('active');
 };
 
 // Open Edit modal populated with data
-window.openEditModal = function(id) {
+window.openEditModal = function (id) {
   SoundEffects.play('click');
   const record = state.records.find(rec => rec.id === id);
   if (!record) return;
-  
+
   DOM.editRecordId.value = record.id;
   DOM.editRecordAmount.value = record.amount;
   DOM.editRecordMethod.value = record.method;
   DOM.editRecordDate.value = record.date;
   DOM.editRecordTime.value = record.time;
-  DOM.editRecordObservation.value = record.observation || '';
-  
+
   DOM.modalEditar.classList.add('active');
 };
 
@@ -770,12 +851,12 @@ function saveEditChanges() {
   const date = DOM.editRecordDate.value;
   const time = DOM.editRecordTime.value;
   const obs = DOM.editRecordObservation.value.trim();
-  
+
   if (isNaN(amount) || amount <= 0) {
     alert('Monto inválido.');
     return;
   }
-  
+
   updateRecord(id, {
     amount: amount,
     method: method,
@@ -783,7 +864,7 @@ function saveEditChanges() {
     time: time,
     observation: obs
   });
-  
+
   DOM.modalEditar.classList.remove('active');
   showQuickBanner('Cambios guardados');
 }
@@ -797,21 +878,26 @@ function exportToCSV() {
     alert('No hay pasajes registrados para exportar.');
     return;
   }
-  
+
   // Headers in Spanish
   let csvContent = "\uFEFF"; // UTF-8 BOM to prevent Excel display errors with accent/characters
   csvContent += "ID,Fecha,Hora,Metodo de Pago,Monto (S/),Observaciones\r\n";
-  
+
   state.records.forEach(rec => {
     const cleanObs = (rec.observation || '').replace(/"/g, '""'); // Escape double quotes
     csvContent += `"${rec.id}","${formatDateString(rec.date)}","${rec.time}","${rec.method}","${rec.amount.toFixed(2)}","${cleanObs}"\r\n`;
   });
-  
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const downloadLink = document.createElement("a");
   downloadLink.setAttribute("href", url);
-  downloadLink.setAttribute("download", `reporte_pasajes_jeanpool_${new Date().toISOString().split('T')[0]}.csv`);
+  const cNow = new Date();
+  const cYear = cNow.getFullYear();
+  const cMonth = String(cNow.getMonth() + 1).padStart(2, '0');
+  const cDay = String(cNow.getDate()).padStart(2, '0');
+  const cDateStr = `${cYear}-${cMonth}-${cDay}`;
+  downloadLink.setAttribute("download", `reporte_pasajes_jeanpool_${cDateStr}.csv`);
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
@@ -827,7 +913,7 @@ function triggerPDFPrint() {
 function syncToFirebase() {
   const { apiKey, dbUrl } = state.firebaseConfig;
   if (!apiKey || !dbUrl) return; // Silent return if not configured
-  
+
   // Realtime Database URL cleanup
   let cleanUrl = dbUrl;
   if (!cleanUrl.endsWith('.json')) {
@@ -837,7 +923,7 @@ function syncToFirebase() {
       cleanUrl += '/pasajes_v2.json';
     }
   }
-  
+
   // Perform asynchronous REST request to sync full state
   fetch(`${cleanUrl}?auth=${apiKey}`, {
     method: 'PUT',
@@ -846,16 +932,16 @@ function syncToFirebase() {
     },
     body: JSON.stringify(state.records)
   })
-  .then(res => {
-    if (res.ok) {
-      console.log('Sincronización con Firebase realizada con éxito.');
-    } else {
-      console.warn('Error al sincronizar con Firebase.');
-    }
-  })
-  .catch(err => {
-    console.warn('Fallo en la comunicación offline con Firebase. Sincronización diferida.', err);
-  });
+    .then(res => {
+      if (res.ok) {
+        console.log('Sincronización con Firebase realizada con éxito.');
+      } else {
+        console.warn('Error al sincronizar con Firebase.');
+      }
+    })
+    .catch(err => {
+      console.warn('Fallo en la comunicación offline con Firebase. Sincronización diferida.', err);
+    });
 }
 
 // Run app init

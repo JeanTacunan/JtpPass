@@ -235,8 +235,8 @@ main::-webkit-scrollbar {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  padding: 18px;
-  margin-bottom: 16px;
+  padding: 12px;
+  margin-bottom: 10px;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
@@ -260,11 +260,11 @@ main::-webkit-scrollbar {
 /* --- REGISTRO PANEL --- */
 .amount-display {
   text-align: center;
-  padding: 24px 10px;
+  padding: 12px 10px;
   background: linear-gradient(180deg, var(--bg-tertiary) 0%, transparent 100%);
   border-radius: 18px;
   border: 1px solid var(--border-color);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   position: relative;
   overflow: hidden;
 }
@@ -322,7 +322,7 @@ main::-webkit-scrollbar {
   font-family: var(--font-main);
   font-weight: 600;
   font-size: 0.95rem;
-  padding: 14px 0;
+  padding: 8px 0;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -346,8 +346,8 @@ main::-webkit-scrollbar {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 20px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
   transition: border-color 0.2s ease;
 }
 
@@ -384,7 +384,7 @@ main::-webkit-scrollbar {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 14px;
+  padding: 10px;
   border-radius: 14px;
   cursor: pointer;
   display: flex;
@@ -417,22 +417,14 @@ main::-webkit-scrollbar {
   border-color: #742284;
   background-color: rgba(116, 34, 132, 0.15);
 }
-.btn-payment[data-method="plin"].active {
-  border-color: #00bcd4;
-  background-color: rgba(0, 188, 212, 0.15);
-}
 .btn-payment[data-method="efectivo"].active {
   border-color: #10b981;
   background-color: rgba(16, 185, 129, 0.15);
 }
-.btn-payment[data-method="transferencia"].active {
-  border-color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.15);
-}
 
 /* Optional Observation Field */
 .observation-container {
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 }
 
 .observation-container input {
@@ -440,7 +432,7 @@ main::-webkit-scrollbar {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 8px 12px;
   font-family: var(--font-main);
   color: var(--text-primary);
   font-size: 0.9rem;
@@ -465,7 +457,7 @@ main::-webkit-scrollbar {
   font-family: var(--font-main);
   font-weight: 700;
   font-size: 1.05rem;
-  padding: 16px 0;
+  padding: 11px 0;
   border-radius: 16px;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 240, 255, 0.2);
@@ -737,17 +729,9 @@ main::-webkit-scrollbar {
   background-color: rgba(116, 34, 132, 0.12);
   color: #c95fdc;
 }
-.item-badge[data-method="plin"] {
-  background-color: rgba(0, 188, 212, 0.12);
-  color: #00bcd4;
-}
 .item-badge[data-method="efectivo"] {
   background-color: rgba(16, 185, 129, 0.12);
   color: #10b981;
-}
-.item-badge[data-method="transferencia"] {
-  background-color: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
 }
 
 .item-info {
@@ -911,6 +895,28 @@ main::-webkit-scrollbar {
   font-size: 0.8rem;
   font-weight: 600;
   width: 100%;
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  border: none;
+  color: #050814;
+  font-family: var(--font-main);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(0, 240, 255, 0.1);
 }
 
 .btn-secondary {
