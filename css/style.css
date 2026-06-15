@@ -71,6 +71,19 @@
   --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
 }
 
+/* Light-theme overrides for glow effects */
+.light-theme .pill.active {
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.25);
+}
+
+.light-theme .pill-date.active {
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.3), 0 0 20px rgba(37, 99, 235, 0.1);
+}
+
+.light-theme .day-nav-btn:hover {
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.2);
+}
+
 html {
   height: -webkit-fill-available;
   height: 100%;
@@ -658,6 +671,84 @@ main::-webkit-scrollbar {
   background-color: var(--accent-light);
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
+}
+
+/* --- DASHBOARD FILTER ROW --- */
+.dashboard-filter-row {
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.dashboard-filter-row .filter-pills {
+  flex-wrap: nowrap;
+  padding-bottom: 4px;
+}
+
+/* Date picker chip special styling */
+.pill-date {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  gap: 2px;
+}
+
+.pill-date.active {
+  background-color: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+/* Day Navigation Bar */
+.day-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  animation: fadeInSlide 0.3s ease forwards;
+}
+
+.day-nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.day-nav-btn:hover {
+  background-color: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+}
+
+.day-nav-btn:active {
+  transform: scale(0.9);
+}
+
+.day-nav-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  flex: 1;
+  text-align: center;
 }
 
 /* History List */

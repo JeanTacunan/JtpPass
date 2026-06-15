@@ -122,17 +122,35 @@
       <!-- 2. DASHBOARD PANEL -->
       <section id="dashboard" class="panel">
         
-        <!-- Period and Vuelta Filter Row -->
-        <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-          <div class="filter-pills" id="dashboardPeriodPills" style="margin-bottom: 0; flex: 1;">
+        <!-- Period Filter Chips + Date Picker -->
+        <div class="dashboard-filter-row">
+          <div class="filter-pills" id="dashboardPeriodPills">
             <span class="pill active" data-period="hoy">Hoy</span>
             <span class="pill" data-period="semana">Semana</span>
             <span class="pill" data-period="mes">Mes</span>
+            <!-- Date Picker Chip -->
+            <span class="pill pill-date" id="dashboardDateChip" data-period="fecha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;margin-right:4px;vertical-align:middle;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span id="dashboardDateLabel">Fecha</span>
+              <input type="date" id="dashboardDateInput" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+            </span>
           </div>
-          
-          <select id="dashboardVueltaFilter" class="select-filter" style="width: 110px; padding: 6px 20px 6px 10px; font-size: 0.75rem; height: 32px; border-radius: 20px; background-position: right 8px center;">
-            <option value="todas">Todas</option>
-          </select>
+        </div>
+
+        <!-- Day Navigation (visible only when a specific date is selected) -->
+        <div class="day-nav-bar" id="dayNavBar" style="display:none;">
+          <button class="day-nav-btn" id="btnPrevDay" title="Día anterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <span id="dayNavLabel" class="day-nav-label">15/06/2026</span>
+          <button class="day-nav-btn" id="btnNextDay" title="Día siguiente">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
         </div>
 
         <!-- Vuelta Control Card (At the top for first-sight action!) -->
