@@ -244,13 +244,13 @@ function drawTrendChart(records) {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 9 } }
+          ticks: { color: textColor, font: { family: 'Inter', size: 9 } }
         },
         y: {
           grid: { color: gridColor },
           ticks: {
             color: textColor,
-            font: { family: 'Plus Jakarta Sans', size: 9 },
+            font: { family: 'Inter', size: 9 },
             callback: (val) => `S/${val}`
           }
         }
@@ -298,7 +298,7 @@ function drawMethodsChart(counts) {
           position: 'right',
           labels: {
             color: textColor,
-            font: { family: 'Plus Jakarta Sans', size: 10, weight: '500' },
+            font: { family: 'Inter', size: 10, weight: '500' },
             boxWidth: 8,
             boxHeight: 8,
             usePointStyle: true,

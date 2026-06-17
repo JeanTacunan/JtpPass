@@ -1,21 +1,11 @@
 {
-  "short_name": "Pasajes V2.1",
-  "name": "Registro de Pasajes V2.1",
+  "short_name": "Pasajes V2.3",
+  "name": "Registro de Pasajes V2.3",
   "icons": [
     {
       "src": "logo.svg",
       "type": "image/svg+xml",
       "sizes": "any"
-    },
-    {
-      "src": "logo-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": "index.html",

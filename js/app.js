@@ -11,12 +11,21 @@ const state = {
   records: [],
   tariffs: [1.00, 1.50, 2.00, 2.50],
   activeTab: 'registro',
+  activeRoute: 'normal',
   theme: 'dark',
   soundsEnabled: true,
   firebaseConfig: { apiKey: '', dbUrl: '' },
   currentEditId: null,
   currentDeleteId: null
 };
+
+const ROUTE_CONFIG = {
+  normal: { label: 'Normal', recommendedFare: 2.00 },
+  larga: { label: 'Larga', recommendedFare: 2.50 }
+};
+
+let clockTimer = null;
+let eventListenersReady = false;
 
 // --- AUDIO SINTETIZADOR (Web Audio API) ---
 const SoundEffects = {
@@ -80,15 +89,24 @@ const SoundEffects = {
   }
 };
 
+window.SoundEffects = SoundEffects;
+
 // --- DOM ELEMENTS ---
 const DOM = {
   themeToggle: document.getElementById('themeToggle'),
   soundToggle: document.getElementById('soundToggle'),
   navItems: document.querySelectorAll('.nav-item'),
   panels: document.querySelectorAll('.panel'),
+  currentTime: document.getElementById('currentTime'),
+  selectedRouteLabel: document.getElementById('selectedRouteLabel'),
+  recommendedAmount: document.getElementById('recommendedAmount'),
+  routeBtns: document.querySelectorAll('.route-segment'),
+  fareActionBtns: document.querySelectorAll('.fare-action-btn'),
+  toastStack: document.getElementById('toastStack'),
   selectedAmount: document.getElementById('selectedAmount'),
   quickTariffBtns: document.querySelectorAll('.btn-quick'),
   customAmount: document.getElementById('customAmount'),
+  recordObservation: document.getElementById('recordObservation'),
   paymentBtns: document.querySelectorAll('.btn-payment'),
   btnRegistrar: document.getElementById('btnRegistrar'),
 
@@ -97,7 +115,7 @@ const DOM = {
   searchHistory: document.getElementById('searchHistory'),
   filterDate: document.getElementById('filterDate'),
   sortOrder: document.getElementById('sortOrder'),
-  filterPills: document.querySelectorAll('.pill'),
+  filterPills: document.querySelectorAll('#historial .filter-pills .pill'),
 
   // Modals
   modalEditar: document.getElementById('modalEditar'),
@@ -106,6 +124,7 @@ const DOM = {
   editRecordMethod: document.getElementById('editRecordMethod'),
   editRecordDate: document.getElementById('editRecordDate'),
   editRecordTime: document.getElementById('editRecordTime'),
+  editRecordObservation: document.getElementById('editRecordObservation'),
   btnCloseEditModal: document.getElementById('btnCloseEditModal'),
   btnCancelEdit: document.getElementById('btnCancelEdit'),
   btnSaveEdit: document.getElementById('btnSaveEdit'),
@@ -128,12 +147,18 @@ const DOM = {
   ],
   btnBackupExport: document.getElementById('btnBackupExport'),
   backupFileImport: document.getElementById('backupFileImport'),
+  btnDatabasePurge: document.getElementById('btnDatabasePurge'),
+  firebaseApiKey: document.getElementById('firebaseApiKey'),
+  firebaseDbUrl: document.getElementById('firebaseDbUrl'),
+  btnSaveFirebase: document.getElementById('btnSaveFirebase'),
+  btnExportExcel: document.getElementById('btnExportExcel'),
+  btnExportPDF: document.getElementById('btnExportPDF'),
   // Added Vuelta control elements
   btnFinalizarVuelta: document.getElementById('btnFinalizarVuelta'),
   activeVueltaLabel: document.getElementById('activeVueltaLabel'),
 
 
-}
+};
 
 // Function to update the Vuelta text label in the DOM
 function updateVueltaLabel() {
@@ -169,15 +194,54 @@ if (DOM.btnFinalizarVuelta) {
     finalizarVuelta();
   });
 }
-/*
-firebaseApiKey: document.getElementById('firebaseApiKey'),
-  firebaseDbUrl: document.getElementById('firebaseDbUrl'),
-    btnSaveFirebase: document.getElementById('btnSaveFirebase'),
 
-      // Exports
-      btnExportExcel: document.getElementById('btnExportExcel'),
-        btnExportPDF: document.getElementById('btnExportPDF')
-}; */
+function getRecommendedFare() {
+  return ROUTE_CONFIG[state.activeRoute]?.recommendedFare || ROUTE_CONFIG.normal.recommendedFare;
+}
+
+function setSelectedAmount(amount) {
+  if (DOM.selectedAmount) {
+    DOM.selectedAmount.textContent = Number(amount).toFixed(2);
+  }
+}
+
+function applyRouteUI() {
+  const route = ROUTE_CONFIG[state.activeRoute] ? state.activeRoute : 'normal';
+  state.activeRoute = route;
+  const config = ROUTE_CONFIG[route];
+
+  if (DOM.selectedRouteLabel) {
+    DOM.selectedRouteLabel.textContent = config.label;
+  }
+  if (DOM.recommendedAmount) {
+    DOM.recommendedAmount.textContent = config.recommendedFare.toFixed(2);
+  }
+
+  setSelectedAmount(config.recommendedFare);
+
+  DOM.routeBtns.forEach(btn => {
+    const isActive = btn.dataset.route === route;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', String(isActive));
+  });
+
+  DOM.fareActionBtns.forEach(btn => {
+    const isRecommended = parseFloat(btn.dataset.amount) === config.recommendedFare;
+    btn.classList.toggle('is-recommended', isRecommended);
+  });
+}
+
+function updateClock() {
+  if (!DOM.currentTime) return;
+  const now = new Date();
+  DOM.currentTime.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
+function startClock() {
+  if (clockTimer) return;
+  updateClock();
+  clockTimer = setInterval(updateClock, 15000);
+}
 
 // --- INITIALIZE APPLICATION ---
 function initApp() {
@@ -185,6 +249,9 @@ function initApp() {
   setupEventListeners();
   applyTheme();
   applySoundsIndicator();
+  applyRouteUI();
+  updateClock();
+  startClock();
   updateTariffUI();
   renderHistory();
   updateVueltaLabel();
@@ -197,6 +264,10 @@ function initApp() {
 function loadData() {
   // Load Theme
   state.theme = localStorage.getItem('pasajes_v2_theme') || 'dark';
+
+  // Load selected route
+  const savedRoute = localStorage.getItem('pasajes_v2_active_route');
+  state.activeRoute = ROUTE_CONFIG[savedRoute] ? savedRoute : 'normal';
 
   // Load Sounds Switch
   const savedSounds = localStorage.getItem('pasajes_v2_sounds');
@@ -254,6 +325,7 @@ function saveData() {
   localStorage.setItem('pasajes_v2_records', JSON.stringify(state.records));
   localStorage.setItem('pasajes_v2_tariffs', JSON.stringify(state.tariffs));
   localStorage.setItem('pasajes_v2_theme', state.theme);
+  localStorage.setItem('pasajes_v2_active_route', state.activeRoute);
   localStorage.setItem('pasajes_v2_sounds', JSON.stringify(state.soundsEnabled));
   localStorage.setItem('pasajes_v2_firebase', JSON.stringify(state.firebaseConfig));
   localStorage.setItem('pasajes_v2_active_vuelta', state.activeVuelta);
@@ -266,20 +338,23 @@ function saveData() {
 // --- CORE CRUD OPERATIONS ---
 
 // Add Record
-function addRecord() {
-  const amount = parseFloat(DOM.selectedAmount.textContent);
+function addRecord(options = {}) {
+  const amount = parseFloat(options.amount ?? DOM.selectedAmount?.textContent);
   if (isNaN(amount) || amount <= 0) {
     alert('Por favor seleccione o ingrese un monto válido.');
-    return;
+    return null;
   }
 
   // Find active payment method
-  let paymentMethod = 'efectivo';
-  DOM.paymentBtns.forEach(btn => {
-    if (btn.classList.contains('active')) {
-      paymentMethod = btn.dataset.method;
-    }
-  });
+  let paymentMethod = options.method || 'efectivo';
+  if (!options.method) {
+    DOM.paymentBtns.forEach(btn => {
+      if (btn.classList.contains('active')) {
+        paymentMethod = btn.dataset.method;
+      }
+    });
+  }
+  const observation = options.observation ?? DOM.recordObservation?.value.trim() ?? '';
 
   const now = new Date();
 
@@ -296,8 +371,10 @@ function addRecord() {
     id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     amount: amount,
     method: paymentMethod,
+    route: state.activeRoute,
     date: localDate,
-    time: localTime
+    time: localTime,
+    observation: observation
   };
 
   state.records.unshift(record); // Prepend to history
@@ -307,7 +384,12 @@ function addRecord() {
   SoundEffects.play('success');
 
   // Reset input fields
-  DOM.customAmount.value = '';
+  if (DOM.customAmount) {
+    DOM.customAmount.value = '';
+  }
+  if (DOM.recordObservation && !options.keepObservation) {
+    DOM.recordObservation.value = '';
+  }
   // Set back to default active quick amount
   DOM.quickTariffBtns.forEach(btn => {
     if (parseFloat(btn.dataset.amount) === state.tariffs[1]) {
@@ -321,8 +403,8 @@ function addRecord() {
     window.updateDashboard();
   }
 
-  // Trigger quick success flash alert in document
-  showQuickBanner('Pasaje registrado con éxito');
+  showRegistrationToast(record);
+  return record;
 }
 
 // Delete Record
@@ -352,6 +434,8 @@ function updateRecord(id, updatedFields) {
 
 // --- EVENT LISTENERS ---
 function setupEventListeners() {
+  if (eventListenersReady) return;
+  eventListenersReady = true;
 
   // Tab Navigation switching
   DOM.navItems.forEach(item => {
@@ -372,6 +456,31 @@ function setupEventListeners() {
       // Special: Refresh charts when entering dashboard
       if (target === 'dashboard' && window.updateDashboard) {
         window.updateDashboard();
+      }
+    });
+  });
+
+  DOM.routeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const route = btn.dataset.route;
+      if (!ROUTE_CONFIG[route] || state.activeRoute === route) return;
+      SoundEffects.play('click');
+      state.activeRoute = route;
+      localStorage.setItem('pasajes_v2_active_route', state.activeRoute);
+      applyRouteUI();
+    });
+  });
+
+  DOM.fareActionBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.add('pressed');
+      window.setTimeout(() => btn.classList.remove('pressed'), 180);
+      const record = addRecord({
+        amount: parseFloat(btn.dataset.amount),
+        method: btn.dataset.method
+      });
+      if (record) {
+        showFareAnimation(record.amount, record.method, btn);
       }
     });
   });
@@ -415,13 +524,7 @@ function setupEventListeners() {
       DOM.quickTariffBtns.forEach(b => b.classList.remove('active'));
       DOM.selectedAmount.textContent = val.toFixed(2);
     } else {
-      // Restore selected quick button value
-      const activeBtn = document.querySelector('.btn-quick.active');
-      if (activeBtn) {
-        DOM.selectedAmount.textContent = parseFloat(activeBtn.dataset.amount).toFixed(2);
-      } else {
-        DOM.selectedAmount.textContent = "0.00";
-      }
+      setSelectedAmount(getRecommendedFare());
     }
   });
 
@@ -436,7 +539,10 @@ function setupEventListeners() {
 
   // Submit record pasaje
   DOM.btnRegistrar.addEventListener('click', () => {
-    addRecord();
+    const record = addRecord();
+    if (record) {
+      showFareAnimation(record.amount, record.method, DOM.btnRegistrar);
+    }
   });
 
   // --- HISTORY FILTERS EVENTS ---
@@ -670,6 +776,92 @@ function showQuickBanner(message) {
   }, 2200);
 }
 
+function getPaymentLabel(method) {
+  if (method === 'yape') return 'Yape';
+  if (method === 'transferencia') return 'Transferencia';
+  return 'Efectivo';
+}
+
+function showFareAnimation(amount, paymentMethod, targetButton) {
+  if (!targetButton) return;
+
+  const container = document.querySelector('.app-container') || document.body;
+  const buttonRect = targetButton.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const fare = document.createElement('div');
+
+  fare.className = 'floating-fare';
+  fare.dataset.method = paymentMethod;
+  fare.textContent = `S/${Number(amount).toFixed(2)}`;
+  fare.style.left = '0px';
+  fare.style.top = '0px';
+
+  container.appendChild(fare);
+
+  const left = buttonRect.left - containerRect.left + (buttonRect.width / 2) - (fare.offsetWidth / 2);
+  const top = buttonRect.top - containerRect.top + Math.min(34, buttonRect.height * 0.35);
+  fare.style.left = `${Math.max(8, Math.min(left, containerRect.width - fare.offsetWidth - 8))}px`;
+  fare.style.top = `${Math.max(8, top)}px`;
+
+  fare.addEventListener('animationend', () => fare.remove(), { once: true });
+  window.setTimeout(() => fare.remove(), 1200);
+}
+
+function undoRecord(id) {
+  const previousLength = state.records.length;
+  state.records = state.records.filter(rec => rec.id !== id);
+  if (state.records.length === previousLength) return;
+
+  saveData();
+  renderHistory();
+  if (window.updateDashboard) {
+    window.updateDashboard();
+  }
+  SoundEffects.play('click');
+  showQuickBanner('Registro deshecho');
+}
+
+function showRegistrationToast(record) {
+  if (!record) return;
+  const stack = DOM.toastStack || document.querySelector('#toastStack');
+  if (!stack) {
+    showQuickBanner(`Pasaje registrado: S/${record.amount.toFixed(2)} - ${getPaymentLabel(record.method)}`);
+    return;
+  }
+
+  stack.querySelectorAll('.toast-registration').forEach(toast => toast.remove());
+
+  const toast = document.createElement('div');
+  toast.className = 'app-toast toast-registration';
+  toast.innerHTML = `
+    <div class="toast-main">
+      <span class="toast-check">✓</span>
+      <span>
+        <strong class="toast-title">Pasaje registrado</strong>
+        <span class="toast-detail">S/${record.amount.toFixed(2)} - ${getPaymentLabel(record.method)}</span>
+      </span>
+    </div>
+    <button type="button" class="toast-action">Deshacer</button>
+  `;
+
+  let closed = false;
+  const closeToast = () => {
+    if (closed) return;
+    closed = true;
+    toast.classList.add('toast-exit');
+    window.setTimeout(() => toast.remove(), 240);
+  };
+
+  const timer = window.setTimeout(closeToast, 3000);
+  toast.querySelector('.toast-action').addEventListener('click', () => {
+    window.clearTimeout(timer);
+    closeToast();
+    undoRecord(record.id);
+  });
+
+  stack.appendChild(toast);
+}
+
 // --- RENDER HISTORY PANEL LIST ---
 function renderHistory() {
   const searchTerm = DOM.searchHistory.value.toLowerCase().trim();
@@ -835,6 +1027,7 @@ window.openEditModal = function (id) {
   DOM.editRecordMethod.value = record.method;
   DOM.editRecordDate.value = record.date;
   DOM.editRecordTime.value = record.time;
+  DOM.editRecordObservation.value = record.observation || '';
 
   DOM.modalEditar.classList.add('active');
 };

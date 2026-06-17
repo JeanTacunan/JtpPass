@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Registro de Pasajes V2.1 - Ing. Jean Pool Tacunan Palomino</title>
+  <title>Registro de Pasajes V2.3 - Ing. Jean Pool Tacunan Palomino</title>
 
   <!-- PWA Metadata & iOS Support -->
   <link rel="manifest" href="manifest.json">
@@ -30,9 +30,9 @@
     <!-- Header Block -->
     <header>
       <div class="header-brand">
-        <img src="logo.svg" alt="Logo Pasajes V2.1">
+        <img src="logo.svg" alt="Logo Pasajes V2.3">
         <div class="brand-details">
-          <h1>Pasajes V2.1</h1>
+          <h1>Pasajes V2.3</h1>
           <span>Ing. Jean Tacunan</span>
         </div>
       </div>
@@ -62,61 +62,123 @@
 
       <!-- 1. REGISTRO PANEL -->
       <section id="registro" class="panel active">
-        <div class="amount-display">
-          <p class="amount-label">Monto Seleccionado</p>
-          <div class="amount-value">
-            <span class="currency">S/</span>
-            <span id="selectedAmount">1.50</span>
+        <div class="registro-shell">
+          <div class="fare-hero-card">
+            <div class="fare-hero-brand">
+              <span class="fare-hero-icon">&raquo;</span>
+              <div>
+                <strong id="currentTime">--:--</strong>
+                <span>Hora actual</span>
+              </div>
+            </div>
+            <div class="fare-hero-status">
+              <span>Ruta: <b id="selectedRouteLabel">Normal</b></span>
+              <div class="recommended-badge">
+                <span>&#11088; Tarifa sugerida</span>
+                <strong>S/<span id="recommendedAmount">2.00</span></strong>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="card-title">Pasajes Rápidos</div>
-          <div class="quick-amounts-grid">
-            <button class="btn-quick" data-amount="1.00">S/1.0</button>
-            <button class="btn-quick active" data-amount="1.50">S/1.5</button>
-            <button class="btn-quick" data-amount="2.00">S/2.0</button>
-            <button class="btn-quick" data-amount="2.50">S/2.5</button>
-          </div>
-
-          <div class="input-custom-container">
-            <span>S/</span>
-            <input type="number" id="customAmount" placeholder="Otro monto personalizado..." step="0.10" min="0">
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Método de Pago</div>
-          <div class="payment-grid">
-            <button class="btn-payment active" data-method="efectivo">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                <circle cx="12" cy="12" r="2"></circle>
-                <path d="M6 12h.01M18 12h.01"></path>
-              </svg>
-              Efectivo
+          <div class="route-segmented" role="tablist" aria-label="Selector de ruta">
+            <button type="button" class="route-segment active" data-route="normal" role="tab" aria-selected="true">
+              <span class="route-icon route-icon-normal"></span>
+              <strong>Ruta Normal</strong>
             </button>
-            <button class="btn-payment" data-method="yape">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-              </svg>
-              Yape
+            <button type="button" class="route-segment" data-route="larga" role="tab" aria-selected="false">
+              <span class="route-icon route-icon-larga"></span>
+              <strong>Ruta Larga</strong>
             </button>
           </div>
-        </div>
 
-        <div class="observation-container">
-          <input type="text" id="recordObservation" placeholder="Observaciones opcionales (ej. Ruta A, Escolar)..."
-            maxlength="50">
-        </div>
+          <div class="quick-register-card">
+            <div class="quick-register-header">
+              <h2>Registrar pasaje</h2>
+              <span>Un toque</span>
+            </div>
 
-        <button id="btnRegistrar" class="btn-submit">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Registrar Pasaje
-        </button>
+            <div class="fare-action-grid" aria-label="Registro rápido de pasajes">
+              <div class="fare-method-column">
+                <div class="fare-method-heading cash-heading">
+                  <span class="method-icon cash-icon"></span>
+                  <strong>Efectivo</strong>
+                </div>
+                <button type="button" class="fare-action-btn fare-cash is-recommended" data-method="efectivo"
+                  data-amount="2.00" aria-label="Registrar S/2.00 en efectivo">
+                  <strong class="fare-action-amount">+ S/2.00</strong>
+                  <span class="fare-action-method">Efectivo</span>
+                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                </button>
+                <button type="button" class="fare-action-btn fare-cash" data-method="efectivo" data-amount="2.50"
+                  aria-label="Registrar S/2.50 en efectivo">
+                  <strong class="fare-action-amount">+ S/2.50</strong>
+                  <span class="fare-action-method">Efectivo</span>
+                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                </button>
+                <button type="button" class="fare-action-btn fare-cash" data-method="efectivo" data-amount="3.00"
+                  aria-label="Registrar S/3.00 en efectivo">
+                  <strong class="fare-action-amount">+ S/3.00</strong>
+                  <span class="fare-action-method">Efectivo</span>
+                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                </button>
+              </div>
+
+              <div class="fare-method-column">
+                <div class="fare-method-heading yape-heading">
+                  <span class="method-icon yape-icon">yape</span>
+                  <strong>Yape</strong>
+                </div>
+                <button type="button" class="fare-action-btn fare-yape is-recommended" data-method="yape"
+                  data-amount="2.00" aria-label="Registrar S/2.00 con Yape">
+                  <strong class="fare-action-amount">+ S/2.00</strong>
+                  <span class="fare-action-method">Yape</span>
+                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                </button>
+                <button type="button" class="fare-action-btn fare-yape" data-method="yape" data-amount="2.50"
+                  aria-label="Registrar S/2.50 con Yape">
+                  <strong class="fare-action-amount">+ S/2.50</strong>
+                  <span class="fare-action-method">Yape</span>
+                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                </button>
+                <button type="button" class="fare-action-btn fare-yape" data-method="yape" data-amount="3.00"
+                  aria-label="Registrar S/3.00 con Yape">
+                  <strong class="fare-action-amount">+ S/3.00</strong>
+                  <span class="fare-action-method">Yape</span>
+                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <details class="manual-register-card">
+            <summary>Monto manual</summary>
+            <div class="manual-register-body">
+              <div class="input-custom-container">
+                <span>S/</span>
+                <input type="number" id="customAmount" placeholder="0.00" step="0.10" min="0">
+              </div>
+              <div class="payment-grid">
+                <button type="button" class="btn-payment active" data-method="efectivo">
+                  <span>&#128181;</span>
+                  Efectivo
+                </button>
+                <button type="button" class="btn-payment" data-method="yape">
+                  <span>&#128241;</span>
+                  Yape
+                </button>
+              </div>
+              <div class="observation-container">
+                <input type="text" id="recordObservation" placeholder="Observación opcional" maxlength="50">
+              </div>
+              <button id="btnRegistrar" class="btn-submit" type="button">
+                Registrar manual
+              </button>
+            </div>
+          </details>
+
+          <span id="selectedAmount" class="sr-only">2.00</span>
+        </div>
       </section>
 
       <!-- 2. DASHBOARD PANEL -->
@@ -395,13 +457,15 @@
           <div class="credits-badge-container">
             <span class="credits-badge">Sistemas</span>
             <span class="credits-badge">UX/UI Fintech</span>
-            <span class="credits-badge">PWA V2.1</span>
+            <span class="credits-badge">PWA V2.3</span>
           </div>
         </div>
 
       </section>
 
     </main>
+
+    <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Bottom Navigation Bar -->
     <nav class="bottom-nav">
