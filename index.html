@@ -107,19 +107,19 @@
                   data-amount="2.00" aria-label="Registrar S/2.00 en efectivo">
                   <strong class="fare-action-amount">+ S/2.00</strong>
                   <span class="fare-action-method">Efectivo</span>
-                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                  <span class="fare-action-badge">&#11088; RECOMENDADA</span>
                 </button>
                 <button type="button" class="fare-action-btn fare-cash" data-method="efectivo" data-amount="2.50"
                   aria-label="Registrar S/2.50 en efectivo">
                   <strong class="fare-action-amount">+ S/2.50</strong>
                   <span class="fare-action-method">Efectivo</span>
-                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                  <span class="fare-action-badge">&#11088; RECOMENDADA</span>
                 </button>
                 <button type="button" class="fare-action-btn fare-cash" data-method="efectivo" data-amount="3.00"
                   aria-label="Registrar S/3.00 en efectivo">
                   <strong class="fare-action-amount">+ S/3.00</strong>
                   <span class="fare-action-method">Efectivo</span>
-                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                  <span class="fare-action-badge">&#11088; RECOMENDADA</span>
                 </button>
               </div>
 
@@ -132,19 +132,19 @@
                   data-amount="2.00" aria-label="Registrar S/2.00 con Yape">
                   <strong class="fare-action-amount">+ S/2.00</strong>
                   <span class="fare-action-method">Yape</span>
-                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                  <span class="fare-action-badge">&#11088; RECOMENDADA</span>
                 </button>
                 <button type="button" class="fare-action-btn fare-yape" data-method="yape" data-amount="2.50"
                   aria-label="Registrar S/2.50 con Yape">
                   <strong class="fare-action-amount">+ S/2.50</strong>
                   <span class="fare-action-method">Yape</span>
-                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                  <span class="fare-action-badge">&#11088; RECOMENDADA</span>
                 </button>
                 <button type="button" class="fare-action-btn fare-yape" data-method="yape" data-amount="3.00"
                   aria-label="Registrar S/3.00 con Yape">
                   <strong class="fare-action-amount">+ S/3.00</strong>
                   <span class="fare-action-method">Yape</span>
-                  <span class="fare-action-badge">&#11088; Recomendada</span>
+                  <span class="fare-action-badge">&#11088; RECOMENDADA</span>
                 </button>
               </div>
             </div>
@@ -229,45 +229,71 @@
           </button>
         </div>
 
+        <!-- Daily revenue goal -->
+        <div class="daily-goal-card" aria-label="Meta del d&iacute;a">
+          <div class="daily-goal-content">
+            <div class="daily-goal-copy">
+              <div class="daily-goal-header">
+                <span>META DEL D&Iacute;A</span>
+              </div>
+              <div class="daily-goal-amount">
+                <strong id="dailyGoalCurrent">S/0.00</strong>
+                <span>/</span>
+                <span id="dailyGoalTarget">S/100.00</span>
+              </div>
+              <div class="daily-goal-insights">
+                <span id="dailyGoalBasis">Primer d&iacute;a de uso</span>
+                <span id="dailyGoalTrend">Meta inicial</span>
+              </div>
+              <div class="daily-goal-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="dailyGoalBar" class="daily-goal-fill"></div>
+              </div>
+            </div>
+            <div id="dailyGoalRing" class="daily-goal-ring" aria-hidden="true">
+              <div class="daily-goal-ring-center">
+                <strong id="dailyGoalPercent">0%</strong>
+                <span>avance</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Key indicators grid -->
         <div class="stats-grid">
-          <div class="stat-card" style="grid-column: span 2; padding: 12px; background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);">
-            <span class="stat-label" style="font-size: 0.8rem;">Ingreso Total</span>
-            <span id="kpiTotal" class="stat-value highlight" style="font-size: 1.8rem;">S/0.00</span>
+          <div class="stat-card kpi-card kpi-total-card">
+            <span class="kpi-icon" aria-hidden="true">&#128176;</span>
+            <span id="kpiTotal" class="stat-value highlight">S/0.00</span>
+            <span class="stat-label">Total recaudado</span>
             <div id="trendGeneral" class="stat-footer">
               <!-- Dynamically populated trend -->
             </div>
           </div>
-          
-          <div class="stat-card" style="border-left: 3px solid #10b981; padding: 10px;">
-            <span class="stat-label">Efectivo</span>
-            <span id="kpiEfectivo" class="stat-value" style="color: #10b981; font-size: 1.15rem;">S/0.00</span>
-            <span id="footerEfectivo" class="stat-footer">0 pasajes</span>
-          </div>
-          
-          <div class="stat-card" style="border-left: 3px solid #a21caf; padding: 10px;">
-            <span class="stat-label">Yape</span>
-            <span id="kpiYape" class="stat-value" style="color: #a21caf; font-size: 1.15rem;">S/0.00</span>
-            <span id="footerYape" class="stat-footer">0 pasajes</span>
-          </div>
-          
-          <div class="stat-card" style="padding: 10px;">
-            <span class="stat-label">Vueltas</span>
-            <span id="kpiVueltas" class="stat-value" style="font-size: 1.15rem;">0</span>
-            <span class="stat-footer" id="kpiVueltasFooter">Vuelta actual</span>
-          </div>
-          
-          <div class="stat-card" style="padding: 10px;">
+
+          <div class="stat-card kpi-card kpi-passengers-card">
+            <span class="kpi-icon" aria-hidden="true">&#128101;</span>
+            <span id="kpiPasajeros" class="stat-value">0</span>
             <span class="stat-label">Pasajeros</span>
-            <span id="kpiPasajeros" class="stat-value" style="font-size: 1.15rem;">0</span>
             <span class="stat-footer">Total pasajes</span>
           </div>
-          
-          <div class="stat-card" style="grid-column: span 2; padding: 10px;">
-            <span class="stat-label">Promedio / Pasaje</span>
-            <span id="kpiPromedio" class="stat-value" style="font-size: 1.15rem;">S/0.00</span>
-            <span class="stat-footer">Monto por pasaje</span>
+
+          <div class="stat-card kpi-card kpi-cash-card">
+            <span class="kpi-icon" aria-hidden="true">&#128181;</span>
+            <span id="kpiEfectivo" class="stat-value">S/0.00</span>
+            <span class="stat-label">Efectivo</span>
+            <span id="footerEfectivo" class="stat-footer">0 pasajes</span>
           </div>
+
+          <div class="stat-card kpi-card kpi-yape-card">
+            <span class="kpi-icon" aria-hidden="true">&#128241;</span>
+            <span id="kpiYape" class="stat-value">S/0.00</span>
+            <span class="stat-label">Yape</span>
+            <span id="footerYape" class="stat-footer">0 pasajes</span>
+          </div>
+        </div>
+        <div class="dashboard-hidden-metrics" aria-hidden="true">
+          <span id="kpiVueltas">0</span>
+          <span id="kpiVueltasFooter">Vuelta actual</span>
+          <span id="kpiPromedio">S/0.00</span>
         </div>
 
         <!--
@@ -470,30 +496,26 @@
     <!-- Bottom Navigation Bar -->
     <nav class="bottom-nav">
       <button class="nav-item active" data-target="registro">
-        <!-- Ticket Icon -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
-          <line x1="16" y1="4" x2="16" y2="20"></line>
-          <line x1="8" y1="4" x2="8" y2="20"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <path d="M3 11.5 12 4l9 7.5"></path>
+          <path d="M5 10.5V20h14v-9.5"></path>
+          <path d="M9 20v-6h6v6"></path>
         </svg>
-        <span>Registro</span>
+        <span>Inicio</span>
       </button>
 
       <button class="nav-item" data-target="dashboard">
-        <!-- Analytics Icon -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round">
           <line x1="18" y1="20" x2="18" y2="10"></line>
           <line x1="12" y1="20" x2="12" y2="4"></line>
           <line x1="6" y1="20" x2="6" y2="14"></line>
         </svg>
-        <span>Dashboard</span>
+        <span>Reportes</span>
       </button>
 
       <button class="nav-item" data-target="historial">
-        <!-- History List Icon -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round">
           <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -507,7 +529,6 @@
       </button>
 
       <button class="nav-item" data-target="ajustes">
-        <!-- Settings Icon -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
@@ -515,7 +536,7 @@
             d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
           </path>
         </svg>
-        <span>Ajustes</span>
+        <span>Configuraci&oacute;n</span>
       </button>
     </nav>
 

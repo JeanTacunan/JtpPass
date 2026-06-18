@@ -35,6 +35,9 @@ function formatDateDisplay(str) {
 // --- DATA PROCESSING & KPI CALCULATION ---
 window.updateDashboard = function () {
   const records = state.records || [];
+  if (window.updateDailyGoalCard) {
+    window.updateDailyGoalCard();
+  }
 
   // Date Helpers (Local timezone)
   const now = new Date();

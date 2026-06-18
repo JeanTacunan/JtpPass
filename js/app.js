@@ -24,6 +24,10 @@ const ROUTE_CONFIG = {
   larga: { label: 'Larga', recommendedFare: 2.50 }
 };
 
+// Smart daily goal configuration.
+const growthPercentage = 10;
+const DEFAULT_DAILY_GOAL_AMOUNT = 100.00;
+
 let clockTimer = null;
 let eventListenersReady = false;
 
@@ -157,8 +161,83 @@ const DOM = {
   btnFinalizarVuelta: document.getElementById('btnFinalizarVuelta'),
   activeVueltaLabel: document.getElementById('activeVueltaLabel'),
 
+  // Daily goal elements
+  dailyGoalCurrent: document.getElementById('dailyGoalCurrent'),
+  dailyGoalTarget: document.getElementById('dailyGoalTarget'),
+  dailyGoalPercent: document.getElementById('dailyGoalPercent'),
+  dailyGoalBar: document.getElementById('dailyGoalBar'),
+  dailyGoalTrack: document.querySelector('.daily-goal-track'),
+  dailyGoalRing: document.getElementById('dailyGoalRing'),
+  dailyGoalBasis: document.getElementById('dailyGoalBasis'),
+  dailyGoalTrend: document.getElementById('dailyGoalTrend'),
 
 };
+
+function formatSoles(amount) {
+  return `S/${Number(amount || 0).toFixed(2)}`;
+}
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getPreviousDateKey(date = new Date()) {
+  const previous = new Date(date);
+  previous.setDate(previous.getDate() - 1);
+  return getLocalDateKey(previous);
+}
+
+function getRevenueTotalsByDate(records = state.records) {
+  return records.reduce((totals, rec) => {
+    const amount = Number(rec.amount || 0);
+    if (!rec.date || isNaN(amount) || amount <= 0) return totals;
+    totals[rec.date] = (totals[rec.date] || 0) + amount;
+    return totals;
+  }, {});
+}
+
+function updateDailyGoalCard() {
+  const today = getLocalDateKey();
+  const yesterday = getPreviousDateKey();
+  const totalsByDate = getRevenueTotalsByDate();
+  const current = totalsByDate[today] || 0;
+  const yesterdayTotal = totalsByDate[yesterday] || 0;
+  const hasYesterdayData = yesterdayTotal > 0;
+  const target = hasYesterdayData
+    ? yesterdayTotal * (1 + (growthPercentage / 100))
+    : DEFAULT_DAILY_GOAL_AMOUNT;
+
+  const rawPercent = target > 0 ? (current / target) * 100 : 0;
+  const roundedPercent = Math.round(rawPercent);
+  const cappedPercent = Math.min(Math.max(rawPercent, 0), 100);
+  const trendPercent = hasYesterdayData ? Math.round(((current - yesterdayTotal) / yesterdayTotal) * 100) : 0;
+  const trendDirection = trendPercent >= 0 ? 'up' : 'down';
+  const trendSymbol = trendPercent >= 0 ? '\u25B2' : '\u25BC';
+  const trendSign = trendPercent >= 0 ? '+' : '';
+
+  if (DOM.dailyGoalCurrent) DOM.dailyGoalCurrent.textContent = formatSoles(current);
+  if (DOM.dailyGoalTarget) DOM.dailyGoalTarget.textContent = formatSoles(target);
+  if (DOM.dailyGoalPercent) DOM.dailyGoalPercent.textContent = `${roundedPercent}%`;
+  if (DOM.dailyGoalBar) DOM.dailyGoalBar.style.width = `${cappedPercent}%`;
+  if (DOM.dailyGoalTrack) DOM.dailyGoalTrack.setAttribute('aria-valuenow', String(Math.round(cappedPercent)));
+  if (DOM.dailyGoalRing) DOM.dailyGoalRing.style.setProperty('--goal-progress', `${cappedPercent}%`);
+  if (DOM.dailyGoalBasis) {
+    DOM.dailyGoalBasis.textContent = hasYesterdayData
+      ? `Basada en ayer: ${formatSoles(yesterdayTotal)}`
+      : 'Primer d\u00eda de uso';
+  }
+  if (DOM.dailyGoalTrend) {
+    DOM.dailyGoalTrend.textContent = hasYesterdayData
+      ? `${trendSymbol} ${trendSign}${trendPercent}% respecto a ayer`
+      : `Meta inicial ${formatSoles(DEFAULT_DAILY_GOAL_AMOUNT)}`;
+    DOM.dailyGoalTrend.dataset.trend = hasYesterdayData ? trendDirection : 'neutral';
+  }
+}
+
+window.updateDailyGoalCard = updateDailyGoalCard;
 
 // Function to update the Vuelta text label in the DOM
 function updateVueltaLabel() {
@@ -255,6 +334,7 @@ function initApp() {
   updateTariffUI();
   renderHistory();
   updateVueltaLabel();
+  updateDailyGoalCard();
   if (window.updateDashboard) {
     window.updateDashboard();
   }
@@ -399,6 +479,7 @@ function addRecord(options = {}) {
 
   // Update views
   renderHistory();
+  updateDailyGoalCard();
   if (window.updateDashboard) {
     window.updateDashboard();
   }
@@ -413,6 +494,7 @@ function deleteRecord(id) {
   saveData();
   SoundEffects.play('delete');
   renderHistory();
+  updateDailyGoalCard();
   if (window.updateDashboard) {
     window.updateDashboard();
   }
@@ -426,6 +508,7 @@ function updateRecord(id, updatedFields) {
     saveData();
     SoundEffects.play('success');
     renderHistory();
+    updateDailyGoalCard();
     if (window.updateDashboard) {
       window.updateDashboard();
     }
@@ -590,6 +673,7 @@ function setupEventListeners() {
     DOM.modalConfirmarVaciado.classList.remove('active');
     SoundEffects.play('delete');
     renderHistory();
+    updateDailyGoalCard();
     if (window.updateDashboard) {
       window.updateDashboard();
     }
@@ -746,14 +830,14 @@ function showQuickBanner(message) {
   banner.style.bottom = '80px';
   banner.style.left = '50%';
   banner.style.transform = 'translateX(-50%) translateY(20px)';
-  banner.style.background = 'var(--bg-tertiary)';
-  banner.style.border = '1px solid var(--border-color)';
-  banner.style.color = 'var(--text-primary)';
+  banner.style.background = 'var(--toast-success-gradient)';
+  banner.style.border = '1px solid rgba(255, 255, 255, 0.16)';
+  banner.style.color = '#FFFFFF';
   banner.style.padding = '10px 20px';
   banner.style.borderRadius = '30px';
   banner.style.fontSize = '0.8rem';
   banner.style.fontWeight = '600';
-  banner.style.boxShadow = 'var(--shadow-md)';
+  banner.style.boxShadow = 'var(--shadow-md), 0 0 20px rgba(34, 197, 94, 0.18)';
   banner.style.opacity = '0';
   banner.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
   banner.style.zIndex = '9999';
@@ -814,6 +898,7 @@ function undoRecord(id) {
 
   saveData();
   renderHistory();
+  updateDailyGoalCard();
   if (window.updateDashboard) {
     window.updateDashboard();
   }
